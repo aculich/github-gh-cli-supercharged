@@ -56,54 +56,33 @@ if ! command -v git &> /dev/null; then
     exit 1
 fi
 
-# Parse arguments
-MODE="${1:-latest}"
+# Parse arguments - optional substring filter
 PATTERN="${1:-}"
 
-# Find trending JSON files
-JSON_FILES=()
-if [ "$MODE" = "all" ]; then
-    # Get all JSONL files sorted by modification time (newest first)
-    while IFS= read -r file; do
-        [ -n "$file" ] && JSON_FILES+=("$file")
-    done < <(find "$TRENDING_DIR" -name "trending-*.jsonl" -type f -exec stat -f "%m %N" {} \; 2>/dev/null | sort -rn | cut -d' ' -f2- || find "$TRENDING_DIR" -name "trending-*.jsonl" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | cut -d' ' -f2- || ls -t "$TRENDING_DIR"/trending-*.jsonl 2>/dev/null)
-elif [ "$MODE" = "latest" ] || [ -z "$1" ]; then
-    # Get the latest JSONL file
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        LATEST=$(find "$TRENDING_DIR" -name "trending-*.jsonl" -type f -exec stat -f "%m %N" {} \; 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
-    else
-        LATEST=$(find "$TRENDING_DIR" -name "trending-*.jsonl" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2- || ls -t "$TRENDING_DIR"/trending-*.jsonl 2>/dev/null | head -1)
-    fi
-    if [ -n "$LATEST" ] && [ -f "$LATEST" ]; then
-        JSON_FILES=("$LATEST")
-    fi
+# Always get the latest JSONL file from trending directory
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    LATEST=$(find "$TRENDING_DIR" -name "trending-*.jsonl" -type f -exec stat -f "%m %N" {} \; 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
 else
-    # Pattern matching - use latest file but filter by pattern
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        LATEST=$(find "$TRENDING_DIR" -name "trending-*.jsonl" -type f -exec stat -f "%m %N" {} \; 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
-    else
-        LATEST=$(find "$TRENDING_DIR" -name "trending-*.jsonl" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2- || ls -t "$TRENDING_DIR"/trending-*.jsonl 2>/dev/null | head -1)
-    fi
-    if [ -n "$LATEST" ] && [ -f "$LATEST" ]; then
-        JSON_FILES=("$LATEST")
-        PATTERN="$1"
-    fi
+    LATEST=$(find "$TRENDING_DIR" -name "trending-*.jsonl" -type f -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2- || ls -t "$TRENDING_DIR"/trending-*.jsonl 2>/dev/null | head -1)
 fi
 
-if [ ${#JSON_FILES[@]} -eq 0 ]; then
+if [ -z "$LATEST" ] || [ ! -f "$LATEST" ]; then
     echo -e "${YELLOW}No trending JSON files found in: $TRENDING_DIR${NC}"
     exit 1
 fi
+
+JSON_FILES=("$LATEST")
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}Clone Trending Repositories${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${GREEN}Mode:${NC} $MODE"
-if [ -n "$PATTERN" ] && [ "$PATTERN" != "latest" ] && [ "$PATTERN" != "all" ]; then
-    echo -e "${GREEN}Pattern:${NC} $PATTERN"
+echo -e "${GREEN}Latest trending file:${NC} $(basename "$LATEST")"
+if [ -n "$PATTERN" ]; then
+    echo -e "${GREEN}Filter pattern:${NC} $PATTERN"
+else
+    echo -e "${GREEN}Filter pattern:${NC} (none - cloning all repositories)"
 fi
-echo -e "${GREEN}Files to process:${NC} ${#JSON_FILES[@]}"
 echo -e "${GREEN}Upstream directory:${NC} $UPSTREAM_DIR"
 echo ""
 
@@ -116,8 +95,8 @@ for JSON_FILE in "${JSON_FILES[@]}"; do
     # Convert JSONL to JSON array for processing (JSONL has one JSON object per line)
     JSON_ARRAY=$(jq -s '.' "$JSON_FILE" 2>/dev/null || cat "$JSON_FILE" | jq -s '.')
     
-    if [ -n "$PATTERN" ] && [ "$PATTERN" != "latest" ] && [ "$PATTERN" != "all" ]; then
-        # Filter by pattern
+    if [ -n "$PATTERN" ]; then
+        # Filter by substring pattern (case-insensitive)
         MATCHING=$(echo "$JSON_ARRAY" | jq -r --arg pattern "$PATTERN" '.[] | select(.fullName | ascii_downcase | contains($pattern | ascii_downcase)) | .fullName')
         while IFS= read -r repo; do
             if [ -n "$repo" ]; then
@@ -125,7 +104,7 @@ for JSON_FILE in "${JSON_FILES[@]}"; do
             fi
         done <<< "$MATCHING"
     else
-        # Get all repos from file
+        # Get all repos from file (no filter)
         while IFS= read -r repo; do
             if [ -n "$repo" ]; then
                 REPOS_TO_CLONE+=("$repo")

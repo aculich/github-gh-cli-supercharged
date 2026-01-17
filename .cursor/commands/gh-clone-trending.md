@@ -5,26 +5,25 @@ Clone trending repositories from the latest trending search results into the `up
 ## Usage
 
 ```bash
-/gh-clone-trending [latest|all|repo-name-pattern]
+/gh-clone-trending [substring-pattern]
 ```
 
 ## Options
 
-- **latest** (default): Clone all repositories from the most recent trending JSON file
-- **all**: Clone repositories from all trending JSON files
-- **repo-name-pattern**: Clone repositories matching the specified pattern (searches in latest file)
+- **No argument**: Clone all repositories from the most recent trending JSON file
+- **substring-pattern**: Clone repositories matching the specified substring (case-insensitive, searches in latest file)
 
 ## Examples
 
-- Clone all repos from latest trending: `/gh-clone-trending` or `/gh-clone-trending latest`
-- Clone all repos from all trending files: `/gh-clone-trending all`
-- Clone repos matching "banana": `/gh-clone-trending banana`
+- Clone all repos from latest trending: `/gh-clone-trending`
 - Clone repos matching "langchain": `/gh-clone-trending langchain`
+- Clone repos matching "banana": `/gh-clone-trending banana`
+- Clone repos matching "openai": `/gh-clone-trending openai`
 
 ## What It Does
 
-1. **Finds Trending Files**: Locates JSON files in the workspace `trending/` directory (workspace-relative)
-2. **Filters Repositories**: Based on your selection (latest/all/pattern)
+1. **Finds Latest Trending File**: Automatically locates the most recent JSON file in the workspace `trending/` directory (workspace-relative)
+2. **Filters Repositories**: If a substring is provided, filters repositories by matching the substring in the repository name (case-insensitive). Otherwise, clones all repositories from the latest file.
 3. **Clones Repositories**: Clones matching repos into workspace `upstream/` directory (workspace-relative)
 4. **Generates Manifest**: Creates a comprehensive markdown manifest for each cloned repo including:
    - GitHub metadata (stars, forks, dates, language, etc.)
