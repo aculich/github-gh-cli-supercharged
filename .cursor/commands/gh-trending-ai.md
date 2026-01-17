@@ -14,11 +14,13 @@ Run the following command to search for trending AI repositories:
 gh-trend-ai [limit] [query]
 ```
 
-Or use the script directly:
+Or use the script directly (saves to workspace `trending/` directory):
 
 ```bash
 ./scripts/gh-trending-discovery.sh --topics "ai,llm,machine-learning" --min-stars 100 --days 30
 ```
+
+**Note:** Results are automatically saved to `trending/` directory in your workspace root (relative to where the command is run).
 
 ## Examples
 

@@ -12,11 +12,29 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-# Get script directory and project root
+# Get workspace root (workspace-relative paths)
+# Try to find workspace root, fallback to script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-TRENDING_DIR="$PROJECT_ROOT/trending"
-UPSTREAM_DIR="$PROJECT_ROOT/upstream"
+GET_WORKSPACE_SCRIPT="$SCRIPT_DIR/get-workspace-root.sh"
+
+# Get workspace root (looks for .cursor or .git directories)
+if [ -f "$GET_WORKSPACE_SCRIPT" ]; then
+    WORKSPACE_ROOT=$(bash "$GET_WORKSPACE_SCRIPT" "$(pwd)")
+else
+    # Fallback: try to find workspace root manually
+    CURRENT_DIR="$(pwd)"
+    WORKSPACE_ROOT="$CURRENT_DIR"
+    while [ "$CURRENT_DIR" != "/" ]; do
+        if [ -d "$CURRENT_DIR/.cursor" ] || [ -d "$CURRENT_DIR/.git" ]; then
+            WORKSPACE_ROOT="$CURRENT_DIR"
+            break
+        fi
+        CURRENT_DIR="$(dirname "$CURRENT_DIR")"
+    done
+fi
+
+TRENDING_DIR="$WORKSPACE_ROOT/trending"
+UPSTREAM_DIR="$WORKSPACE_ROOT/upstream"
 
 # Create directories if they don't exist
 mkdir -p "$TRENDING_DIR"
@@ -295,7 +313,7 @@ generate_manifest() {
         echo ""
     } >> "$manifest_file"
     
-    cd "$PROJECT_ROOT"
+    cd "$WORKSPACE_ROOT"
     
     echo "✅ Manifest generated: $manifest_file"
 }

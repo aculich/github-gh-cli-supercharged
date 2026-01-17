@@ -23,9 +23,9 @@ Clone trending repositories from the latest trending search results into the `up
 
 ## What It Does
 
-1. **Finds Trending Files**: Locates JSON files in the `trending/` directory
+1. **Finds Trending Files**: Locates JSON files in the workspace `trending/` directory (workspace-relative)
 2. **Filters Repositories**: Based on your selection (latest/all/pattern)
-3. **Clones Repositories**: Clones matching repos into `upstream/` directory
+3. **Clones Repositories**: Clones matching repos into workspace `upstream/` directory (workspace-relative)
 4. **Generates Manifest**: Creates a comprehensive markdown manifest for each cloned repo including:
    - GitHub metadata (stars, forks, dates, language, etc.)
    - README.md content
