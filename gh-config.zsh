@@ -34,7 +34,7 @@ fi
 export GH_CLI_CONFIG_DIR="${GH_CLI_CONFIG_DIR:-$HOME/.config/gh-cli}"
 
 # Create config directory if it doesn't exist (silently)
-mkdir -p "$GH_CLI_CONFIG_DIR" 2>/dev/null
+mkdir -p "$GH_CLI_CONFIG_DIR" 2>/dev/null || true
 
 # Source the functions file (with guard)
 if [[ -f "$GH_CLI_DIR/gh-functions.zsh" ]]; then
