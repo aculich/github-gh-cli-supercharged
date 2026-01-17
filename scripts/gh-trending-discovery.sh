@@ -130,6 +130,24 @@ if [ -z "$RESULTS" ] || [ "$RESULTS" = "[]" ]; then
     exit 0
 fi
 
+# Filter by pushedAt date: must be >= Jan 1 of previous year
+# If today is Jan 17 2026, previous year is 2025, so filter >= 2025-01-01
+CURRENT_YEAR=$(date +%Y)
+PREVIOUS_YEAR=$((CURRENT_YEAR - 1))
+YEAR_START="${PREVIOUS_YEAR}-01-01T00:00:00Z"
+
+echo -e "${GREEN}Filtering repositories pushed after:${NC} $YEAR_START"
+RESULTS=$(echo "$RESULTS" | jq --arg cutoff "$YEAR_START" '[.[] | select(.pushedAt >= $cutoff)]')
+
+FILTERED_COUNT=$(echo "$RESULTS" | jq 'length')
+if [ "$FILTERED_COUNT" -eq 0 ]; then
+    echo -e "${YELLOW}No repositories found that were pushed after $YEAR_START.${NC}"
+    exit 0
+fi
+
+echo -e "${GREEN}Repositories after date filter:${NC} $FILTERED_COUNT"
+echo ""
+
 # Format output based on format type
 case "$OUTPUT_FORMAT" in
     json)
@@ -168,25 +186,59 @@ case "$OUTPUT_FORMAT" in
         ;;
 esac
 
-# Save to file if requested
+# Auto-save to trending/ directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+TRENDING_DIR="$PROJECT_ROOT/trending"
+mkdir -p "$TRENDING_DIR"
+
+# Generate timestamp and search term for filename
+TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+SEARCH_TERM=$(echo "$TOPICS" | tr ',' '-' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9-]//g' | cut -c1-50)
+JSONL_FILE="$TRENDING_DIR/trending-${SEARCH_TERM}-${TIMESTAMP}.jsonl"
+MD_FILE="$TRENDING_DIR/trending-${SEARCH_TERM}-${TIMESTAMP}.md"
+
+# Save JSONL format (one JSON object per line)
+echo "$RESULTS" | jq -c '.[]' > "$JSONL_FILE"
+echo -e "${GREEN}JSONL saved to:${NC} $JSONL_FILE"
+
+# Save Markdown format
+{
+    echo "# Trending Repositories: $TOPICS"
+    echo ""
+    echo "Generated: $(date)"
+    echo "Search Query: $QUERY"
+    echo "Filter: Pushed after $YEAR_START"
+    echo ""
+    echo "## Summary"
+    echo ""
+    TOTAL=$(echo "$RESULTS" | jq 'length')
+    TOTAL_STARS=$(echo "$RESULTS" | jq '[.[] | .stargazersCount] | add')
+    AVG_STARS=$(echo "$RESULTS" | jq '[.[] | .stargazersCount] | add / length | floor')
+    echo "- Total repositories: $TOTAL"
+    echo "- Total stars: $TOTAL_STARS"
+    echo "- Average stars: $AVG_STARS"
+    echo ""
+    echo "## Repositories"
+    echo ""
+    echo "| Repository | Stars | Created | Updated | Pushed | Language | Forks | Issues | Description |"
+    echo "|------------|-------|---------|---------|--------|----------|-------|--------|-------------|"
+    echo "$RESULTS" | jq -r '.[] | 
+        "| [\(.fullName)](\(.url)) | \(.stargazersCount) | \(.createdAt) | \(.updatedAt) | \(.pushedAt) | \(.language // "N/A") | \(.forksCount) | \(.openIssuesCount) | \(.description // "No description" | gsub("\n"; " ") | .[0:80]) |"'
+} > "$MD_FILE"
+echo -e "${GREEN}Markdown saved to:${NC} $MD_FILE"
+echo ""
+
+# Also save to file if explicitly requested via SAVE_TO_FILE
 if [ -n "${SAVE_TO_FILE:-}" ]; then
     case "$OUTPUT_FORMAT" in
         json)
             echo "$RESULTS" | jq '.' > "$SAVE_TO_FILE"
+            echo -e "${GREEN}Also saved to:${NC} $SAVE_TO_FILE"
             ;;
         markdown)
-            {
-                echo "# Trending Repositories"
-                echo ""
-                echo "Generated: $(date)"
-                echo ""
-                echo "| Repository | Stars | Created | Updated | Pushed | Language | Forks | Issues | Description |"
-                echo "|------------|-------|---------|---------|--------|----------|-------|--------|-------------|"
-                echo "$RESULTS" | jq -r '.[] | 
-                    "| [\(.fullName)](\(.url)) | \(.stargazersCount) | \(.createdAt) | \(.updatedAt) | \(.pushedAt) | \(.language // "N/A") | \(.forksCount) | \(.openIssuesCount) | \(.description // "No description" | gsub("\n"; " ") | .[0:60]) |"'
-            } > "$SAVE_TO_FILE"
+            cp "$MD_FILE" "$SAVE_TO_FILE"
+            echo -e "${GREEN}Also saved to:${NC} $SAVE_TO_FILE"
             ;;
     esac
-    echo ""
-    echo -e "${GREEN}Results saved to: $SAVE_TO_FILE${NC}"
 fi

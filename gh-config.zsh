@@ -33,13 +33,17 @@ fi
 # Export config directory for use in functions
 export GH_CLI_CONFIG_DIR="${GH_CLI_CONFIG_DIR:-$HOME/.config/gh-cli}"
 
-# Create config directory if it doesn't exist (silently)
-mkdir -p "$GH_CLI_CONFIG_DIR" 2>/dev/null || true
+# Create config directory if it doesn't exist (completely silent)
+{
+    mkdir -p "$GH_CLI_CONFIG_DIR" 2>/dev/null || true
+} 2>/dev/null &>/dev/null
 
-# Source the functions file (with guard)
-if [[ -f "$GH_CLI_DIR/gh-functions.zsh" ]]; then
-    source "$GH_CLI_DIR/gh-functions.zsh"
-fi
+# Source the functions file (with guard, completely silent)
+{
+    if [[ -f "$GH_CLI_DIR/gh-functions.zsh" ]]; then
+        source "$GH_CLI_DIR/gh-functions.zsh" 2>/dev/null
+    fi
+} 2>/dev/null &>/dev/null
 
 # ============================================================================
 # fzf Configuration for GitHub CLI
@@ -59,25 +63,28 @@ export FZF_DEFAULT_OPTS="
 
 # fzf key bindings for gh workflows
 # Use Ctrl-G to trigger GitHub-related searches
-if command -v fzf &> /dev/null 2>&1; then
-    # Bind Ctrl-G + R for repo search (silently)
-    bindkey -s '^Gr' 'gh-repo-fzf\n' 2>/dev/null &>/dev/null || true
-    
-    # Bind Ctrl-G + I for issue search (silently)
-    bindkey -s '^Gi' 'gh-issue-fzf\n' 2>/dev/null &>/dev/null || true
-    
-    # Bind Ctrl-G + P for PR search (silently)
-    bindkey -s '^Gp' 'gh-pr-fzf\n' 2>/dev/null &>/dev/null || true
-    
-    # Bind Ctrl-G + N for notifications (silently)
-    bindkey -s '^Gn' 'gh-notify-fzf\n' 2>/dev/null &>/dev/null || true
-    
-    # Bind Ctrl-G + S for starred repos (silently)
-    bindkey -s '^Gs' 'gh-star-fzf\n' 2>/dev/null &>/dev/null || true
-    
-    # Bind Ctrl-G + T for trending AI (silently)
-    bindkey -s '^Gt' 'gh-trend-ai\n' 2>/dev/null &>/dev/null || true
-fi
+# Wrap in block to suppress all output
+{
+    if command -v fzf &> /dev/null 2>&1; then
+        # Bind Ctrl-G + R for repo search (completely silent)
+        bindkey -s '^Gr' 'gh-repo-fzf\n' 2>/dev/null &>/dev/null || true
+        
+        # Bind Ctrl-G + I for issue search (completely silent)
+        bindkey -s '^Gi' 'gh-issue-fzf\n' 2>/dev/null &>/dev/null || true
+        
+        # Bind Ctrl-G + P for PR search (completely silent)
+        bindkey -s '^Gp' 'gh-pr-fzf\n' 2>/dev/null &>/dev/null || true
+        
+        # Bind Ctrl-G + N for notifications (completely silent)
+        bindkey -s '^Gn' 'gh-notify-fzf\n' 2>/dev/null &>/dev/null || true
+        
+        # Bind Ctrl-G + S for starred repos (completely silent)
+        bindkey -s '^Gs' 'gh-star-fzf\n' 2>/dev/null &>/dev/null || true
+        
+        # Bind Ctrl-G + T for trending AI (completely silent)
+        bindkey -s '^Gt' 'gh-trend-ai\n' 2>/dev/null &>/dev/null || true
+    fi
+} 2>/dev/null &>/dev/null
 
 # ============================================================================
 # Aliases
@@ -153,26 +160,30 @@ export GH_NO_UPDATE_NOTIFIER=1  # Disable update notifications if desired
 # ============================================================================
 
 # Enable gh completion if available (completely silent)
-if command -v gh &> /dev/null 2>&1; then
-    # Try to source gh completion
-    local brew_prefix
-    brew_prefix=$(brew --prefix 2>/dev/null) || brew_prefix=""
-    if [[ -n "$brew_prefix" ]] && [[ -f "$brew_prefix/share/zsh/site-functions/_gh" ]] 2>/dev/null; then
-        # Homebrew location - silently use it
-        :
-    elif [[ -f "/usr/share/zsh/site-functions/_gh" ]] 2>/dev/null; then
-        # System location - silently use it
-        :
-    else
-        # Generate completion if not found (silently, only if file doesn't exist)
-        if [[ ! -f "$GH_CLI_CONFIG_DIR/_gh" ]]; then
-            gh completion --shell zsh > "$GH_CLI_CONFIG_DIR/_gh" 2>/dev/null || true
-        fi
-        if [[ -f "$GH_CLI_CONFIG_DIR/_gh" ]]; then
-            fpath=("$GH_CLI_CONFIG_DIR" $fpath) 2>/dev/null || true
+# Wrap in a block to suppress all output
+{
+    if command -v gh &> /dev/null 2>&1; then
+        # Try to source gh completion
+        local brew_prefix=""
+        # Capture brew output completely silently
+        brew_prefix=$(brew --prefix 2>/dev/null) 2>/dev/null || brew_prefix=""
+        if [[ -n "$brew_prefix" ]] && [[ -f "$brew_prefix/share/zsh/site-functions/_gh" ]] 2>/dev/null; then
+            # Homebrew location - silently use it
+            :
+        elif [[ -f "/usr/share/zsh/site-functions/_gh" ]] 2>/dev/null; then
+            # System location - silently use it
+            :
+        else
+            # Generate completion if not found (silently, only if file doesn't exist)
+            if [[ ! -f "$GH_CLI_CONFIG_DIR/_gh" ]]; then
+                gh completion --shell zsh > "$GH_CLI_CONFIG_DIR/_gh" 2>/dev/null 2>&1 || true
+            fi
+            if [[ -f "$GH_CLI_CONFIG_DIR/_gh" ]]; then
+                fpath=("$GH_CLI_CONFIG_DIR" $fpath) 2>/dev/null || true
+            fi
         fi
     fi
-fi
+} 2>/dev/null
 
 # ============================================================================
 # Utility Functions
