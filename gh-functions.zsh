@@ -2,6 +2,9 @@
 # GitHub CLI Functions with fzf Integration
 # Source this file in your .zshrc or gh-config.zsh
 
+# Use emulate to ensure clean function definitions without output
+emulate -L zsh
+
 # Check dependencies (silently)
 if ! command -v gh &> /dev/null; then
     # Silently note - functions will check at runtime

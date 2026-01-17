@@ -39,9 +39,13 @@ export GH_CLI_CONFIG_DIR="${GH_CLI_CONFIG_DIR:-$HOME/.config/gh-cli}"
 } 2>/dev/null &>/dev/null
 
 # Source the functions file (with guard, completely silent)
+# Use emulate to prevent any verbose output
 {
     if [[ -f "$GH_CLI_DIR/gh-functions.zsh" ]]; then
-        source "$GH_CLI_DIR/gh-functions.zsh" 2>/dev/null
+        # Use emulate to ensure clean sourcing without output
+        emulate -L zsh
+        # Source with all output suppressed
+        source "$GH_CLI_DIR/gh-functions.zsh" 2>/dev/null &>/dev/null
     fi
 } 2>/dev/null &>/dev/null
 

@@ -95,9 +95,12 @@ REPOS_TO_CLONE=()
 for JSON_FILE in "${JSON_FILES[@]}"; do
     echo -e "${BLUE}Processing:${NC} $(basename "$JSON_FILE")"
     
+    # Convert JSONL to JSON array for processing (JSONL has one JSON object per line)
+    JSON_ARRAY=$(jq -s '.' "$JSON_FILE" 2>/dev/null || cat "$JSON_FILE" | jq -s '.')
+    
     if [ -n "$PATTERN" ] && [ "$PATTERN" != "latest" ] && [ "$PATTERN" != "all" ]; then
         # Filter by pattern
-        MATCHING=$(jq -r --arg pattern "$PATTERN" 'select(.fullName | ascii_downcase | contains($pattern | ascii_downcase)) | .fullName' "$JSON_FILE")
+        MATCHING=$(echo "$JSON_ARRAY" | jq -r --arg pattern "$PATTERN" '.[] | select(.fullName | ascii_downcase | contains($pattern | ascii_downcase)) | .fullName')
         while IFS= read -r repo; do
             if [ -n "$repo" ]; then
                 REPOS_TO_CLONE+=("$repo")
@@ -109,7 +112,7 @@ for JSON_FILE in "${JSON_FILES[@]}"; do
             if [ -n "$repo" ]; then
                 REPOS_TO_CLONE+=("$repo")
             fi
-        done < <(jq -r '.fullName' "$JSON_FILE")
+        done < <(echo "$JSON_ARRAY" | jq -r '.[] | .fullName')
     fi
 done
 
@@ -329,7 +332,9 @@ for repo in "${UNIQUE_REPOS[@]}"; do
     # Get repository metadata from the JSON file
     REPO_DATA=""
     for JSON_FILE in "${JSON_FILES[@]}"; do
-        REPO_DATA=$(jq -r --arg repo "$repo" 'select(.fullName == $repo)' "$JSON_FILE" | head -1)
+        # Convert JSONL to JSON array and find the repo
+        JSON_ARRAY=$(jq -s '.' "$JSON_FILE" 2>/dev/null || cat "$JSON_FILE" | jq -s '.')
+        REPO_DATA=$(echo "$JSON_ARRAY" | jq -r --arg repo "$repo" '.[] | select(.fullName == $repo)')
         if [ -n "$REPO_DATA" ] && [ "$REPO_DATA" != "null" ]; then
             break
         fi

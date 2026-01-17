@@ -3,6 +3,9 @@
 
 # Suppress all output during plugin loading
 {
+    # Use emulate to ensure clean execution
+    emulate -L zsh
+    
     # Get the directory where this plugin is located
     PLUGIN_DIR="${0:A:h}"
     
