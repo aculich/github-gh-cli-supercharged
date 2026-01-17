@@ -13,9 +13,49 @@ A comprehensive setup to supercharge your GitHub CLI (`gh`) experience with exte
 
 ## Quick Start
 
-### 1. Install Extensions
+### Installation Options
 
-Run the installation script to install all curated extensions:
+Choose one of the following installation methods:
+
+#### Option 1: Oh My Zsh Plugin (Recommended)
+
+If you use [Oh My Zsh](https://ohmyz.sh/), install as a plugin:
+
+```bash
+# Clone the repository
+git clone https://github.com/aculich/github-gh-cli-supercharged.git
+cd github-gh-cli-supercharged
+
+# Run the installer
+./install-oh-my-zsh.sh
+
+# Add to your .zshrc plugins array (if not done automatically)
+# plugins=(github-gh-cli-supercharged ...)
+
+# Reload shell
+source ~/.zshrc
+```
+
+See [INSTALL-oh-my-zsh.md](INSTALL-oh-my-zsh.md) for detailed instructions.
+
+#### Option 2: Direct Installation
+
+For non-Oh My Zsh users or custom setups:
+
+```bash
+# Copy the snippet to your .zshrc
+cat install-snippet.zshrc >> ~/.zshrc
+
+# Edit the path in ~/.zshrc to match your installation location
+# Then reload:
+source ~/.zshrc
+```
+
+See [INSTALL.md](INSTALL.md) for detailed instructions.
+
+### Install Extensions
+
+After installation, install the curated extensions:
 
 ```bash
 ./install-extensions.sh
@@ -27,35 +67,7 @@ This will install extensions for:
 - Repository Management & Discovery
 - Productivity & Workflow
 
-### 2. Configure Zsh
-
-**Option 1: Use the installation snippet (Recommended)**
-
-```bash
-# Copy the snippet to your .zshrc
-cat install-snippet.zshrc >> ~/.zshrc
-
-# Edit the path in ~/.zshrc to match your installation location
-# Then reload:
-source ~/.zshrc
-```
-
-**Option 2: Manual installation**
-
-Add to your `~/.zshrc`:
-
-```bash
-# GitHub CLI Configuration (with guards)
-if [[ -d "$HOME/tools/github-gh-cli" ]] && [[ -f "$HOME/tools/github-gh-cli/gh-config.zsh" ]]; then
-    source "$HOME/tools/github-gh-cli/gh-config.zsh"
-fi
-```
-
-**Update the path** to match your installation location.
-
-See [INSTALL.md](INSTALL.md) for detailed installation and enable/disable instructions.
-
-### 3. Verify Installation
+### Verify Installation
 
 ```bash
 # Check installed extensions
@@ -67,6 +79,16 @@ gh-trend-ai 20
 # View help
 gh-help
 ```
+
+## Installation Methods
+
+This project supports multiple installation methods:
+
+1. **[Oh My Zsh Plugin](INSTALL-oh-my-zsh.md)** - Recommended for Oh My Zsh users
+2. **[Direct Installation](INSTALL.md)** - For custom zsh setups
+3. **Manual Setup** - Full control over configuration
+
+Choose the method that best fits your setup!
 
 ## Installation
 
