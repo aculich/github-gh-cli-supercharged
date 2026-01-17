@@ -153,7 +153,7 @@ else
                 echo -e "${GREEN}✓${NC} Added plugin to .zshrc"
             fi
             echo ""
-            echo "Reload your shell with: ${BLUE}source ~/.zshrc${NC}"
+            echo -e "Reload your shell with: ${BLUE}source ~/.zshrc${NC}"
         else
             echo -e "${YELLOW}⚠️  Could not find plugins array in .zshrc${NC}"
             echo "Please add it manually:"
