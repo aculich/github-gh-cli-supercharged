@@ -44,6 +44,7 @@ mkdir -p "$PLUGINS_DIR"
 # Check if plugin already exists
 if [[ -d "$PLUGIN_DIR" ]]; then
     echo -e "${YELLOW}⚠️  Plugin directory already exists: $PLUGIN_DIR${NC}"
+    echo -e "${BLUE}This will update/replace the existing installation.${NC}"
     read -p "Do you want to update it? (y/N) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -51,6 +52,8 @@ if [[ -d "$PLUGIN_DIR" ]]; then
         exit 0
     fi
     echo "Updating plugin..."
+    # Remove old files to ensure clean update
+    rm -rf "$PLUGIN_DIR"/* 2>/dev/null || true
 else
     echo "Creating plugin directory..."
     mkdir -p "$PLUGIN_DIR"
