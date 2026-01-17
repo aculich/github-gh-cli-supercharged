@@ -117,15 +117,41 @@ else
     read -p "Do you want to add it automatically now? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
+        # Resolve symlinks to get the actual file
+        ZSHRC_FILE="$HOME/.zshrc"
+        if [[ -L "$ZSHRC_FILE" ]]; then
+            ZSHRC_FILE=$(readlink -f "$ZSHRC_FILE" 2>/dev/null || readlink "$ZSHRC_FILE")
+        fi
+        
         # Try to add to plugins array
-        if grep -q "^plugins=(" "$HOME/.zshrc" 2>/dev/null; then
-            # Add to existing plugins array
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' "s/^plugins=(/plugins=(${PLUGIN_NAME} /" "$HOME/.zshrc"
+        if grep -q "^plugins=(" "$ZSHRC_FILE" 2>/dev/null; then
+            # Check if already in plugins array
+            if grep -q "plugins=.*${PLUGIN_NAME}" "$ZSHRC_FILE" 2>/dev/null; then
+                echo -e "${GREEN}✓${NC} Plugin is already in your plugins array"
             else
-                sed -i "s/^plugins=(/plugins=(${PLUGIN_NAME} /" "$HOME/.zshrc"
+                # Add to existing plugins array using a more robust method
+                # Create a temporary file
+                TEMP_FILE=$(mktemp)
+                
+                # Process the file line by line
+                while IFS= read -r line; do
+                    if [[ "$line" =~ ^plugins=\( ]]; then
+                        # Add plugin to the array if not already present
+                        if [[ ! "$line" =~ ${PLUGIN_NAME} ]]; then
+                            # Insert plugin name after "plugins=("
+                            echo "$line" | sed "s/^plugins=(/plugins=(${PLUGIN_NAME} /"
+                        else
+                            echo "$line"
+                        fi
+                    else
+                        echo "$line"
+                    fi
+                done < "$ZSHRC_FILE" > "$TEMP_FILE"
+                
+                # Replace original file
+                mv "$TEMP_FILE" "$ZSHRC_FILE"
+                echo -e "${GREEN}✓${NC} Added plugin to .zshrc"
             fi
-            echo -e "${GREEN}✓${NC} Added plugin to .zshrc"
             echo ""
             echo "Reload your shell with: ${BLUE}source ~/.zshrc${NC}"
         else
