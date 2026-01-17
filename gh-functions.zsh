@@ -76,23 +76,36 @@ gh-trend-libs() {
         echo "Searching for trending repos related to: $lib"
         
         local results
+        local exit_code
         results=$(gh search repos "$lib" \
             --sort updated \
             --order desc \
             --limit 10 \
             --json fullName,description,stargazersCount,updatedAt 2>&1)
+        exit_code=$?
         
-        if [ $? -ne 0 ] || ! echo "$results" | jq empty 2>/dev/null; then
-            echo "  Error searching for: $lib"
+        if [ $exit_code -ne 0 ]; then
+            echo "  Error: GitHub CLI search failed for: $lib"
+            echo "$results" | head -3
+            echo ""
+            continue
+        fi
+        
+        # Check if results are valid JSON
+        if ! echo "$results" | jq empty 2>/dev/null; then
+            echo "  Error: Invalid response from GitHub API for: $lib"
             echo "$results" | head -3
             echo ""
             continue
         fi
         
         if [ -z "$results" ] || [ "$results" = "[]" ]; then
-            echo "  No results found"
+            echo "  No results found for: $lib"
         else
-            echo "$results" | jq -r '.[] | "\(.fullName) ⭐ \(.stargazersCount) | Updated: \(.updatedAt)"'
+            echo "$results" | jq -r '.[] | "\(.fullName) ⭐ \(.stargazersCount) | Updated: \(.updatedAt)"' 2>/dev/null || {
+                echo "  Error parsing results for: $lib"
+                echo "$results" | head -3
+            }
         fi
         echo ""
     done
@@ -153,12 +166,18 @@ gh-lib-updates() {
     fi
     
     echo "Checking for updates in tracked libraries..."
-    jq -r '.libraries[] | "\(.name)|\(.owner // "github")|\(.type // "repo")"' "$config_file" \
+    jq -r '.libraries[] | "\(.name)|\(.owner // "github")|\(.type // "repo")"' "$config_file" 2>/dev/null \
         | while IFS='|' read -r name owner type; do
             if [ "$type" = "repo" ]; then
                 local repo="$owner/$name"
                 echo "Checking $repo..."
-                gh api "repos/$repo/releases" --jq '.[0] | "\(.name) - \(.published_at)"' 2>/dev/null || echo "  No releases found"
+                local release_info
+                release_info=$(gh api "repos/$repo/releases" --jq '.[0] | "\(.name) - \(.published_at)"' 2>&1)
+                if [ $? -eq 0 ] && [ -n "$release_info" ] && [ "$release_info" != "null" ]; then
+                    echo "$release_info"
+                else
+                    echo "  No releases found"
+                fi
             fi
         done
 }
