@@ -108,11 +108,11 @@ else
     echo ""
     echo "Add '${PLUGIN_NAME}' to your plugins array in ~/.zshrc:"
     echo ""
-    echo -e "${BLUE}plugins=(${PLUGIN_NAME} ...)${NC}"
+    echo -e "  ${BLUE}plugins=(${PLUGIN_NAME} ...)${NC}"
     echo ""
     echo "Or run this command to add it automatically:"
     echo ""
-    echo -e "${BLUE}sed -i '' 's/^plugins=(/plugins=(${PLUGIN_NAME} /' ~/.zshrc${NC}"
+    echo -e "  ${BLUE}sed -i '' 's/^plugins=(/plugins=(${PLUGIN_NAME} /' ~/.zshrc${NC}"
     echo ""
     read -p "Do you want to add it automatically now? (y/N) " -n 1 -r
     echo
@@ -164,8 +164,8 @@ fi
 
 echo ""
 echo "Next steps:"
-echo "  1. Install extensions: ${BLUE}./install-extensions.sh${NC} (from plugin directory)"
-echo "  2. Reload shell: ${BLUE}source ~/.zshrc${NC}"
-echo "  3. Test: ${BLUE}gh-help${NC} or ${BLUE}gh-trend-ai${NC}"
+echo -e "  1. Install extensions: ${BLUE}./install-extensions.sh${NC} (from plugin directory)"
+echo -e "  2. Reload shell: ${BLUE}source ~/.zshrc${NC}"
+echo -e "  3. Test: ${BLUE}gh-help${NC} or ${BLUE}gh-trend-ai${NC}"
 echo ""
 echo "Plugin location: $PLUGIN_DIR"
