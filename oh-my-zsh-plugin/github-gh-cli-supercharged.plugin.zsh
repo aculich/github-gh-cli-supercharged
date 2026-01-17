@@ -15,15 +15,12 @@
     # The plugin directory should contain the gh-config.zsh file (installed by install-oh-my-zsh.sh)
     if [[ -f "$PLUGIN_DIR/gh-config.zsh" ]]; then
         # Standard installation: config file is in plugin directory
-        source "$PLUGIN_DIR/gh-config.zsh" 2>/dev/null
+        source "$PLUGIN_DIR/gh-config.zsh" 2>/dev/null &>/dev/null
     elif [[ -f "$PLUGIN_DIR/../gh-config.zsh" ]]; then
         # Development/testing: config file is in parent directory
-        source "$PLUGIN_DIR/../gh-config.zsh" 2>/dev/null
+        source "$PLUGIN_DIR/../gh-config.zsh" 2>/dev/null &>/dev/null
     else
         # Silently fail if config not found
         return 0 2>/dev/null || exit 0
     fi
-} always {
-    # Ensure no output even on errors
-    :
-} 2>/dev/null
+} 2>/dev/null &>/dev/null
