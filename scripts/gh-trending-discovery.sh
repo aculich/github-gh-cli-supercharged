@@ -116,12 +116,14 @@ echo ""
 echo "Searching..."
 
 # Perform search
-RESULTS=$(gh search repos "$QUERY" \
+# Note: topics field is not available in gh search repos, so we exclude it
+# Include all important metadata: createdAt, pushedAt, forksCount, etc.
+RESULTS=$(NO_COLOR=1 gh search repos "$QUERY" \
     --updated ">=$DATE_FILTER" \
     --sort updated \
     --order desc \
     --limit "$LIMIT" \
-    --json fullName,description,stargazersCount,updatedAt,url,topics,language,isArchived)
+    --json fullName,description,stargazersCount,updatedAt,createdAt,pushedAt,url,language,forksCount,openIssuesCount,isArchived,isPrivate,visibility,homepage,license,owner,watchersCount,size,defaultBranch)
 
 if [ -z "$RESULTS" ] || [ "$RESULTS" = "[]" ]; then
     echo -e "${YELLOW}No repositories found matching the criteria.${NC}"
@@ -136,10 +138,10 @@ case "$OUTPUT_FORMAT" in
     markdown)
         echo "# Trending Repositories"
         echo ""
-        echo "| Repository | Stars | Updated | Language | Description |"
-        echo "|------------|-------|---------|----------|-------------|"
+        echo "| Repository | Stars | Created | Updated | Pushed | Language | Forks | Issues | Description |"
+        echo "|------------|-------|---------|---------|--------|----------|-------|--------|-------------|"
         echo "$RESULTS" | jq -r '.[] | 
-            "| [\(.fullName)](\(.url)) | \(.stargazersCount) | \(.updatedAt) | \(.language // "N/A") | \(.description // "No description" | gsub("\n"; " ") | .[0:60]) |"'
+            "| [\(.fullName)](\(.url)) | \(.stargazersCount) | \(.createdAt) | \(.updatedAt) | \(.pushedAt) | \(.language // "N/A") | \(.forksCount) | \(.openIssuesCount) | \(.description // "No description" | gsub("\n"; " ") | .[0:60]) |"'
         ;;
     table|*)
         echo ""
@@ -149,7 +151,7 @@ case "$OUTPUT_FORMAT" in
         echo ""
         
         echo "$RESULTS" | jq -r '.[] | 
-            "\(.fullName)\n  ⭐ Stars: \(.stargazersCount)\n  📅 Updated: \(.updatedAt)\n  💻 Language: \(.language // "N/A")\n  📝 \(.description // "No description")\n  🏷️  Topics: \(.topics | join(", "))\n  🔗 \(.url)\n"'
+            "\(.fullName)\n  ⭐ Stars: \(.stargazersCount)\n  📅 Created: \(.createdAt)\n  📅 Updated: \(.updatedAt)\n  📅 Pushed: \(.pushedAt)\n  💻 Language: \(.language // "N/A")\n  🍴 Forks: \(.forksCount)\n  📝 Issues: \(.openIssuesCount)\n  📝 \(.description // "No description")\n  🔗 \(.url)\n"'
         
         echo ""
         echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -178,10 +180,10 @@ if [ -n "${SAVE_TO_FILE:-}" ]; then
                 echo ""
                 echo "Generated: $(date)"
                 echo ""
-                echo "| Repository | Stars | Updated | Language | Description |"
-                echo "|------------|-------|---------|----------|-------------|"
+                echo "| Repository | Stars | Created | Updated | Pushed | Language | Forks | Issues | Description |"
+                echo "|------------|-------|---------|---------|--------|----------|-------|--------|-------------|"
                 echo "$RESULTS" | jq -r '.[] | 
-                    "| [\(.fullName)](\(.url)) | \(.stargazersCount) | \(.updatedAt) | \(.language // "N/A") | \(.description // "No description" | gsub("\n"; " ") | .[0:60]) |"'
+                    "| [\(.fullName)](\(.url)) | \(.stargazersCount) | \(.createdAt) | \(.updatedAt) | \(.pushedAt) | \(.language // "N/A") | \(.forksCount) | \(.openIssuesCount) | \(.description // "No description" | gsub("\n"; " ") | .[0:60]) |"'
             } > "$SAVE_TO_FILE"
             ;;
     esac

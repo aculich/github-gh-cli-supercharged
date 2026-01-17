@@ -25,12 +25,13 @@ gh-trend-ai() {
     echo "Searching for trending AI/LLM repositories..."
     
     # Get results and check for errors
+    # Include all important metadata: createdAt, pushedAt, forksCount, etc.
     local results
-    results=$(gh search repos "$query" \
+    results=$(NO_COLOR=1 gh search repos "$query" \
         --sort stars \
         --order desc \
         --limit "$limit" \
-        --json fullName,description,stargazersCount,updatedAt,url 2>&1)
+        --json fullName,description,stargazersCount,updatedAt,createdAt,pushedAt,url,language,forksCount,openIssuesCount 2>&1)
     
     # Check if gh command failed
     if [ $? -ne 0 ]; then
@@ -52,11 +53,11 @@ gh-trend-ai() {
         return 0
     fi
     
-    echo "$results" | jq -r '.[] | "\(.fullName)|\(.stargazersCount)|\(.updatedAt)|\(.description // "No description")"' \
+    echo "$results" | jq -r '.[] | "\(.fullName)|\(.stargazersCount)|\(.createdAt)|\(.updatedAt)|\(.pushedAt)|\(.language // "N/A")|\(.forksCount)|\(.openIssuesCount)|\(.description // "No description")"' \
         | fzf \
             --delimiter='|' \
-            --with-nth=1,2,3 \
-            --preview='echo "Repository: {1}\nStars: {2}\nUpdated: {3}\n\nDescription:\n{4}"' \
+            --with-nth=1,2,4 \
+            --preview='echo "Repository: {1}\n⭐ Stars: {2}\n📅 Created: {3}\n📅 Updated: {4}\n📅 Pushed: {5}\n💻 Language: {6}\n🍴 Forks: {7}\n📝 Issues: {8}\n\nDescription:\n{9}"' \
             --preview-window=right:60% \
             --header="Select a repository (Enter to open, Ctrl-C to cancel)" \
         | cut -d'|' -f1 \
