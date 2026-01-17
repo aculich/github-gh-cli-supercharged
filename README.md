@@ -454,7 +454,15 @@ Options:
 
 ### Slash Commands
 
-Cursor slash commands are available in `.cursor/commands/`:
+Cursor slash commands are available in `.cursor/commands/`. To make them **globally available** across all Cursor workspaces, run:
+
+```bash
+./install-cursor-commands.sh
+```
+
+This will symlink the commands to `~/.cursor/commands/` so they're available everywhere.
+
+**Available commands:**
 
 - `/gh-trending-ai` - Find trending AI/LLM repositories
 - `/gh-find-tool` - Search for specific tools or libraries
@@ -465,6 +473,7 @@ Cursor slash commands are available in `.cursor/commands/`:
 - `/gh-pr-review` - Review PRs with AI assistance
 - `/gh-issue-sync` - Sync and manage issues
 - `/gh-notify` - View GitHub notifications
+- `/gh-clone-trending` - Clone trending repositories
 
 ### Agent Hooks
 
