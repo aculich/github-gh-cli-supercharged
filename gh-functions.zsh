@@ -439,9 +439,12 @@ gh-search-my-repos() {
         | xargs -I {} gh repo view {} --web
 }
 
-# Export functions for use in other scripts
-export -f gh-trend-ai gh-trend-libs gh-find-ai-tools gh-lib-updates
-export -f gh-code-pattern gh-snippet-search gh-grep-fzf
-export -f gh-repo-fzf gh-branch-fzf gh-pr-fzf
-export -f gh-notify-fzf gh-issue-fzf gh-star-fzf
-export -f gh-open gh-search-my-repos
+# Export functions for use in other scripts (only if needed)
+# Note: export -f can cause function definitions to be printed in some shells
+# Only export if explicitly needed for subprocess execution
+# Uncomment the lines below if you need functions available in subshells:
+# export -f gh-trend-ai gh-trend-libs gh-find-ai-tools gh-lib-updates
+# export -f gh-code-pattern gh-snippet-search gh-grep-fzf
+# export -f gh-repo-fzf gh-branch-fzf gh-pr-fzf
+# export -f gh-notify-fzf gh-issue-fzf gh-star-fzf
+# export -f gh-open gh-search-my-repos
