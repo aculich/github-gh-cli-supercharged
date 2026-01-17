@@ -1,0 +1,97 @@
+{
+  "libraries": [
+    {
+      "name": "react",
+      "owner": "facebook",
+      "type": "repo",
+      "description": "React library",
+      "category": "frontend"
+    },
+    {
+      "name": "next.js",
+      "owner": "vercel",
+      "type": "repo",
+      "description": "Next.js framework",
+      "category": "frontend"
+    },
+    {
+      "name": "typescript",
+      "owner": "microsoft",
+      "type": "repo",
+      "description": "TypeScript language",
+      "category": "language"
+    },
+    {
+      "name": "python",
+      "owner": "python",
+      "type": "repo",
+      "description": "Python language",
+      "category": "language"
+    },
+    {
+      "name": "transformers",
+      "owner": "huggingface",
+      "type": "repo",
+      "description": "Hugging Face Transformers",
+      "category": "ai-ml"
+    },
+    {
+      "name": "langchain",
+      "owner": "langchain-ai",
+      "type": "repo",
+      "description": "LangChain framework",
+      "category": "ai-ml"
+    },
+    {
+      "name": "openai-python",
+      "owner": "openai",
+      "type": "repo",
+      "description": "OpenAI Python SDK",
+      "category": "ai-ml"
+    },
+    {
+      "name": "tensorflow",
+      "owner": "tensorflow",
+      "type": "repo",
+      "description": "TensorFlow",
+      "category": "ai-ml"
+    },
+    {
+      "name": "pytorch",
+      "owner": "pytorch",
+      "type": "repo",
+      "description": "PyTorch",
+      "category": "ai-ml"
+    },
+    {
+      "name": "firebase-tools",
+      "owner": "firebase",
+      "type": "repo",
+      "description": "Firebase CLI tools",
+      "category": "tools"
+    },
+    {
+      "name": "vscode",
+      "owner": "microsoft",
+      "type": "repo",
+      "description": "VS Code editor",
+      "category": "tools"
+    },
+    {
+      "name": "node",
+      "owner": "nodejs",
+      "type": "repo",
+      "description": "Node.js runtime",
+      "category": "runtime"
+    }
+  ],
+  "categories": {
+    "frontend": "Frontend frameworks and libraries",
+    "language": "Programming languages",
+    "ai-ml": "AI and Machine Learning tools",
+    "tools": "Development tools",
+    "runtime": "Runtime environments"
+  },
+  "update_check_interval_days": 7,
+  "notification_enabled": true
+}
